@@ -1,0 +1,6 @@
+{
+  "name": "منبه الفجر - Fajr Alarm",
+  "description": "تطبيق منبه الفجر الذكي بتجربة هادئة قبل النوم ومحفزة وقت الاستيقاظ مع مهام الأذكار والتسبيح والأسئلة الهادفة.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
