@@ -11,13 +11,17 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  FileCode,
+  BookOpen,
 } from 'lucide-react';
 import { useTheme } from '../themeContext';
+import { FlutterCodeExplorer } from './FlutterCodeExplorer';
 
 export const FlutterTechSpec: React.FC = () => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 
+  const [viewMode, setViewMode] = useState<'code' | 'architecture'>('code');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [expandedSection, setExpandedSection] = useState<number | null>(1);
 
@@ -288,9 +292,9 @@ export const FlutterTechSpec: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-6 select-none">
+    <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 py-6 select-none">
       {/* Header */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-6">
         <div
           className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-3 border ${
             isDark
@@ -299,70 +303,117 @@ export const FlutterTechSpec: React.FC = () => {
           }`}
         >
           <Cpu className="w-3.5 h-3.5" />
-          <span>المواصفات الهندسية الشاملة لـ Flutter</span>
+          <span>التحويل المتكامل إلى تطبيق Flutter المكتبي والجوال</span>
         </div>
         <h2 className={`text-2xl sm:text-3xl font-extrabold mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-          كيف يعمل منبه الفجر في الخلفية والشاشة مقفلة؟
+          مشروع منبه الفجر بلغة Flutter (Dart)
         </h2>
         <p className={`text-sm sm:text-base max-w-xl mx-auto ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-          دليل هندسي كامل لحل مشاكل Doze Mode، Exact Alarm، Full-Screen Intent، وتغير أوقات الصلاة يومياً.
+          كود برمجي حقيقي جاهز للتشغيل مع حلول جذرية لمعضلة إغلاق المنبه في الخلفية والشاشة مقفلة.
         </p>
       </div>
 
-      {/* Accordion Sections */}
-      <div className="flex flex-col gap-3">
-        {sections.map((sec) => {
-          const isExpanded = expandedSection === sec.id;
-          return (
-            <div
-              key={sec.id}
-              className={`border rounded-2xl transition-all duration-200 overflow-hidden ${
-                isExpanded
-                  ? isDark
-                    ? 'bg-slate-900/90 border-slate-700 shadow-xl'
-                    : 'bg-white border-slate-300 shadow-md'
-                  : isDark
-                  ? 'bg-slate-900/50 border-slate-800 hover:border-slate-700'
-                  : 'bg-white border-slate-200 hover:border-slate-300 shadow-xs'
-              }`}
-            >
-              <button
-                type="button"
-                onClick={() => setExpandedSection(isExpanded ? null : sec.id)}
-                className="w-full py-4 px-5 flex items-center justify-between text-right cursor-pointer"
+      {/* Segmented Mode Switcher */}
+      <div className="flex justify-center mb-6">
+        <div
+          className={`p-1 rounded-2xl border flex items-center gap-1.5 ${
+            isDark ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'
+          }`}
+        >
+          <button
+            onClick={() => setViewMode('code')}
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              viewMode === 'code'
+                ? isDark
+                  ? 'bg-emerald-600 text-white shadow-md'
+                  : 'bg-white text-emerald-800 shadow-sm'
+                : isDark
+                ? 'text-slate-400 hover:text-white'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <FileCode className="w-4 h-4" />
+            <span>الأكواد المصدرية الجاهزة (Dart)</span>
+          </button>
+
+          <button
+            onClick={() => setViewMode('architecture')}
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-2 ${
+              viewMode === 'architecture'
+                ? isDark
+                  ? 'bg-emerald-600 text-white shadow-md'
+                  : 'bg-white text-emerald-800 shadow-sm'
+                : isDark
+                ? 'text-slate-400 hover:text-white'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>المواصفات الهندسية (Background Specs)</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Content based on Mode */}
+      {viewMode === 'code' ? (
+        <FlutterCodeExplorer />
+      ) : (
+        /* Accordion Sections */
+        <div className="flex flex-col gap-3">
+          {sections.map((sec) => {
+            const isExpanded = expandedSection === sec.id;
+            return (
+              <div
+                key={sec.id}
+                className={`border rounded-2xl transition-all duration-200 overflow-hidden ${
+                  isExpanded
+                    ? isDark
+                      ? 'bg-slate-900/90 border-slate-700 shadow-xl'
+                      : 'bg-white border-slate-300 shadow-md'
+                    : isDark
+                    ? 'bg-slate-900/50 border-slate-800 hover:border-slate-700'
+                    : 'bg-white border-slate-200 hover:border-slate-300 shadow-xs'
+                }`}
               >
-                <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setExpandedSection(isExpanded ? null : sec.id)}
+                  className="w-full py-4 px-5 flex items-center justify-between text-right cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                        isDark ? 'bg-slate-800' : 'bg-slate-100'
+                      }`}
+                    >
+                      {sec.icon}
+                    </div>
+                    <span className={`font-bold text-sm sm:text-base ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      {sec.title}
+                    </span>
+                  </div>
+                  {isExpanded ? (
+                    <ChevronUp className={`w-5 h-5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
+                  ) : (
+                    <ChevronDown className={`w-5 h-5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
+                  )}
+                </button>
+
+                {isExpanded && (
                   <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                      isDark ? 'bg-slate-800' : 'bg-slate-100'
+                    className={`px-5 pb-5 pt-1 border-t ${
+                      isDark ? 'border-slate-800/60' : 'border-slate-100'
                     }`}
                   >
-                    {sec.icon}
+                    {sec.content}
                   </div>
-                  <span className={`font-bold text-sm sm:text-base ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                    {sec.title}
-                  </span>
-                </div>
-                {isExpanded ? (
-                  <ChevronUp className={`w-5 h-5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
-                ) : (
-                  <ChevronDown className={`w-5 h-5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
                 )}
-              </button>
-
-              {isExpanded && (
-                <div
-                  className={`px-5 pb-5 pt-1 border-t ${
-                    isDark ? 'border-slate-800/60' : 'border-slate-100'
-                  }`}
-                >
-                  {sec.content}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
+

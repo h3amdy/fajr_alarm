@@ -1,0 +1,50 @@
+name: fajr_alarm
+description: "تطبيق منبه الفجر الذكي مع مهام الاستيقاظ (تسبيح، أسئلة دينية، مسائل حسابية) وحساب أوقات الصلاة محلياً."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.2.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # إدارة المنبه الصارم وتشغيل الصوت في الخلفية حتى مع إغلاق التطبيق والشاشة مقفلة
+  alarm: ^4.0.0
+  
+  # حساب أوقات الصلاة بدقة فلكية محلياً دون إنترنت
+  adhan: ^2.0.0+1
+  
+  # حفظ الإعدادات والمنبهات محلياً
+  shared_preferences: ^2.2.2
+  
+  # تشغيل الأصوات والمعاينات
+  audioplayers: ^6.0.0
+  
+  # اهتزاز الجهاز وردود الفعل اللمسية أثناء التسبيح والمنبه
+  vibration: ^2.0.0
+  
+  # إبقاء الشاشة مضاءة عند رنين المنبه
+  wakelock_plus: ^1.2.0
+  
+  # تنسيق التواريخ والأوقات
+  intl: ^0.19.0
+  
+  # أيقونات عصرية
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/audio/tone_qom.mp3
+    - assets/audio/tone_adhan.mp3
+    - assets/audio/tone_quran.mp3
