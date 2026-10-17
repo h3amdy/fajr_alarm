@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../constants/app_colors.dart';
 import '../models/alarm_model.dart';
 import '../services/alarm_service.dart';
 import '../services/prayer_service.dart';
@@ -118,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator(color: Colors.emerald)),
+        body: Center(child: CircularProgressIndicator(color: AppColors.emerald)),
       );
     }
 
@@ -158,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.emerald.withOpacity(0.15),
+                      color: AppColors.emerald.withOpacity(0.15),
                       blurRadius: 16,
                       spreadRadius: 2,
                     ),
@@ -171,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Icons.location_on, color: Colors.emerald, size: 18),
+                            const Icon(Icons.location_on, color: AppColors.emerald, size: 18),
                             const SizedBox(width: 4),
                             Text(
                               _config.city,
@@ -181,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         Switch(
                           value: _config.isEnabled,
-                          activeColor: Colors.emerald,
+                          activeColor: AppColors.emerald,
                           onChanged: _toggleAlarm,
                         ),
                       ],
@@ -220,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(width: 12),
                           Text(
                             '(المنبه: ${timeFormatter.format(_nextWakeUpDate)})',
-                            style: const TextStyle(color: Colors.emeraldAccent, fontSize: 12),
+                            style: const TextStyle(color: AppColors.emeraldAccent, fontSize: 12),
                           ),
                         ],
                       ),
@@ -241,7 +242,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.emerald.withOpacity(0.12),
+                          color: AppColors.emerald.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Text(activeTone.icon, style: const TextStyle(fontSize: 26)),
@@ -260,15 +261,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             Text(
                               activeTone.durationLabel,
-                              style: const TextStyle(fontSize: 11, color: Colors.emerald),
+                              style: const TextStyle(fontSize: 11, color: AppColors.emerald),
                             ),
                           ],
                         ),
                       ),
                       OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.emerald,
-                          side: const BorderSide(color: Colors.emerald),
+                          foregroundColor: AppColors.emerald,
+                          side: const BorderSide(color: AppColors.emerald),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         onPressed: _openSetup,
@@ -284,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // زر تجربة شاشة الرنين والمهمة فوراً
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.emerald.shade700,
+                  backgroundColor: AppColors.emerald.shade700,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

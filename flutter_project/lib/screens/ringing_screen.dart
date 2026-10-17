@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import '../constants/app_colors.dart';
 import '../models/alarm_model.dart';
 import '../services/alarm_service.dart';
 import '../widgets/mission_widgets.dart';
@@ -66,7 +67,7 @@ class _RingingScreenState extends State<RingingScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: _missionCompleted ? Colors.emerald : Colors.amber,
+                        color: _missionCompleted ? AppColors.emerald : Colors.amber,
                       ),
                     ),
                   ],
@@ -110,7 +111,7 @@ class _RingingScreenState extends State<RingingScreen> {
                 if (_missionCompleted)
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.emerald,
+                      backgroundColor: AppColors.emerald,
                       minimumSize: const Size.fromHeight(56),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -159,7 +160,7 @@ class _RingingScreenState extends State<RingingScreen> {
           children: [
             const Text(
               'أذكار الاستيقاظ',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.emerald),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.emerald),
             ),
             const SizedBox(height: 16),
             Container(
@@ -177,7 +178,7 @@ class _RingingScreenState extends State<RingingScreen> {
             const SizedBox(height: 24),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.emerald,
+                backgroundColor: AppColors.emerald,
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
               ),
               onPressed: _onMissionFinished,
@@ -196,7 +197,7 @@ class _RingingScreenState extends State<RingingScreen> {
           width: 80,
           height: 80,
           decoration: const BoxDecoration(
-            color: Colors.emerald,
+            color: AppColors.emerald,
             shape: BoxShape.circle,
           ),
           child: const Icon(Icons.check, size: 48, color: Colors.white),

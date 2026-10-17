@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/app_colors.dart';
 import '../models/alarm_model.dart';
 import '../services/alarm_service.dart';
 
@@ -80,7 +81,7 @@ class _SetupScreenState extends State<SetupScreen> {
             onPressed: _save,
             child: const Text(
               'حفظ',
-              style: TextStyle(color: Colors.emerald, fontWeight: FontWeight.bold, fontSize: 16),
+              style: TextStyle(color: AppColors.emerald, fontWeight: FontWeight.bold, fontSize: 16),
             ),
           ),
         ],
@@ -100,7 +101,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 return ChoiceChip(
                   label: Text(label),
                   selected: isSelected,
-                  selectedColor: Colors.emerald,
+                  selectedColor: AppColors.emerald,
                   onSelected: (val) {
                     if (val) setState(() => _offsetMinutes = mins);
                   },
@@ -158,7 +159,7 @@ class _SetupScreenState extends State<SetupScreen> {
                   return ChoiceChip(
                     label: Text('$count مرات'),
                     selected: _tasbihCount == count,
-                    selectedColor: Colors.emerald,
+                    selectedColor: AppColors.emerald,
                     onSelected: (val) {
                       if (val) setState(() => _tasbihCount = count);
                     },
@@ -177,19 +178,19 @@ class _SetupScreenState extends State<SetupScreen> {
                   ChoiceChip(
                     label: const Text('سهل (جمع)'),
                     selected: _mathDifficulty == MathDifficulty.easy,
-                    selectedColor: Colors.emerald,
+                    selectedColor: AppColors.emerald,
                     onSelected: (val) => setState(() => _mathDifficulty = MathDifficulty.easy),
                   ),
                   ChoiceChip(
                     label: const Text('متوسط'),
                     selected: _mathDifficulty == MathDifficulty.medium,
-                    selectedColor: Colors.emerald,
+                    selectedColor: AppColors.emerald,
                     onSelected: (val) => setState(() => _mathDifficulty = MathDifficulty.medium),
                   ),
                   ChoiceChip(
                     label: const Text('متقدم (ضرب)'),
                     selected: _mathDifficulty == MathDifficulty.hard,
-                    selectedColor: Colors.emerald,
+                    selectedColor: AppColors.emerald,
                     onSelected: (val) => setState(() => _mathDifficulty = MathDifficulty.hard),
                   ),
                 ],
@@ -212,10 +213,10 @@ class _SetupScreenState extends State<SetupScreen> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected ? Colors.emerald : Colors.white12,
+                      color: isSelected ? AppColors.emerald : Colors.white12,
                       width: isSelected ? 2 : 1,
                     ),
-                    color: isSelected ? Colors.emerald.withOpacity(0.08) : Colors.transparent,
+                    color: isSelected ? AppColors.emerald.withOpacity(0.08) : Colors.transparent,
                   ),
                   child: ListTile(
                     leading: Text(tone.icon, style: const TextStyle(fontSize: 24)),
@@ -224,7 +225,7 @@ class _SetupScreenState extends State<SetupScreen> {
                     trailing: IconButton(
                       icon: Icon(
                         isPlaying ? Icons.stop_circle : Icons.play_circle_fill,
-                        color: Colors.emerald,
+                        color: AppColors.emerald,
                         size: 32,
                       ),
                       onPressed: () => _previewTone(tone),
@@ -252,7 +253,7 @@ class _SetupScreenState extends State<SetupScreen> {
           children: [
             Row(
               children: [
-                Icon(icon, color: Colors.emerald, size: 20),
+                Icon(icon, color: AppColors.emerald, size: 20),
                 const SizedBox(width: 8),
                 Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
               ],
@@ -275,10 +276,10 @@ class _SetupScreenState extends State<SetupScreen> {
     return RadioListTile<MissionType>(
       value: type,
       groupValue: _missionType,
-      activeColor: Colors.emerald,
+      activeColor: AppColors.emerald,
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
       subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
-      secondary: Icon(icon, color: isSelected ? Colors.emerald : Colors.grey),
+      secondary: Icon(icon, color: isSelected ? AppColors.emerald : Colors.grey),
       onChanged: (val) {
         if (val != null) setState(() => _missionType = val);
       },

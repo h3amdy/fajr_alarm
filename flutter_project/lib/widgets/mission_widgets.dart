@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
+import '../constants/app_colors.dart';
 import '../models/alarm_model.dart';
 
 // ويدجت مهمة التسبيح الذكي
@@ -50,9 +51,9 @@ class _TasbihMissionWidgetState extends State<TasbihMissionWidget> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           decoration: BoxDecoration(
-            color: Colors.emerald.withOpacity(0.12),
+            color: AppColors.emerald.withOpacity(0.12),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.emerald.withOpacity(0.3)),
+            border: Border.all(color: AppColors.emerald.withOpacity(0.3)),
           ),
           child: Text(
             widget.phrase,
@@ -60,7 +61,7 @@ class _TasbihMissionWidgetState extends State<TasbihMissionWidget> {
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.emerald,
+              color: AppColors.emerald,
             ),
           ),
         ),
@@ -73,13 +74,13 @@ class _TasbihMissionWidgetState extends State<TasbihMissionWidget> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                colors: [Colors.emerald.shade600, Colors.teal.shade700],
+                colors: [AppColors.emerald.shade600, Colors.teal.shade700],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.emerald.withOpacity(0.4),
+                  color: AppColors.emerald.withOpacity(0.4),
                   blurRadius: 20,
                   spreadRadius: 4,
                 ),
@@ -117,7 +118,7 @@ class _TasbihMissionWidgetState extends State<TasbihMissionWidget> {
             value: progress,
             minHeight: 8,
             backgroundColor: Colors.white12,
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.emerald.shade400),
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.emerald.shade400),
           ),
         ),
       ],
@@ -190,7 +191,7 @@ class _QuizMissionWidgetState extends State<QuizMissionWidget> {
       children: [
         Text(
           'سؤال ${_currentIndex + 1} من ${_questions.length}',
-          style: const TextStyle(color: Colors.emerald, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: AppColors.emerald, fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
@@ -206,7 +207,7 @@ class _QuizMissionWidgetState extends State<QuizMissionWidget> {
 
           Color btnColor = Colors.white10;
           if (isSelected) {
-            btnColor = isCorrect ? Colors.emerald : Colors.red.shade700;
+            btnColor = isCorrect ? AppColors.emerald : Colors.red.shade700;
           }
 
           return Padding(
@@ -317,7 +318,7 @@ class _MathMissionWidgetState extends State<MathMissionWidget> {
       children: [
         Text(
           'مسألة ${_solved + 1} من ${widget.totalCount}',
-          style: const TextStyle(color: Colors.emerald, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: AppColors.emerald, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         Text(
@@ -331,7 +332,7 @@ class _MathMissionWidgetState extends State<MathMissionWidget> {
           decoration: BoxDecoration(
             color: Colors.white10,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.emerald),
+            border: Border.all(color: AppColors.emerald),
           ),
           child: Text(
             _input.isEmpty ? '...' : _input,
@@ -350,7 +351,7 @@ class _MathMissionWidgetState extends State<MathMissionWidget> {
               _numKey('$i', () => setState(() => _input += '$i')),
             _numKey('C', () => setState(() => _input = ''), color: Colors.orange),
             _numKey('0', () => setState(() => _input += '0')),
-            _numKey('✓', _checkInput, color: Colors.emerald),
+            _numKey('✓', _checkInput, color: AppColors.emerald),
           ],
         ),
       ],
