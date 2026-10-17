@@ -40,21 +40,6 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        
-        <!-- استقبال إشارات إعادة تشغيل الهاتف لجدولة منبه الفجر تلقائياً -->
-        <receiver
-            android:name="com.gdelataillade.alarm.alarm.AlarmReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-            </intent-filter>
-        </receiver>
-
-        <!-- خدمة الخلفية لتشغيل صوت الأذان دون انقطاع -->
-        <service
-            android:name="com.gdelataillade.alarm.services.AlarmService"
-            android:foregroundServiceType="mediaPlayback"
-            android:exported="false"/>
 
         <meta-data
             android:name="flutterEmbedding"

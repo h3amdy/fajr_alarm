@@ -25,7 +25,7 @@ dependencies:
   audioplayers: ^6.0.0
   
   # اهتزاز الجهاز وردود الفعل اللمسية أثناء التسبيح والمنبه
-  vibration: ^2.0.0
+  vibration: 3.2.1
   
   # إبقاء الشاشة مضاءة عند رنين المنبه
   wakelock_plus: ^1.2.0
