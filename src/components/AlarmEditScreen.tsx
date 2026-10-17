@@ -9,9 +9,11 @@ import {
   formatOffsetLabel,
   TASBIH_PHRASES,
   RELIGIOUS_QUESTIONS,
+  BARCODE_PRESETS,
 } from '../utils/fajrLogic';
 import { useTheme } from '../themeContext';
 import { ToneSelector } from './ToneSelector';
+import { BarcodeSetupConfigurator } from './BarcodeSetupConfigurator';
 import { Check, X, Clock, Sparkles, Volume2 } from 'lucide-react';
 
 interface AlarmEditScreenProps {
@@ -78,6 +80,12 @@ export const AlarmEditScreen: React.FC<AlarmEditScreenProps> = ({
   const [selectedToneId, setSelectedToneId] = useState<AlarmToneId>(
     currentConfig.selectedToneId || 'tone_qom'
   );
+  const [barcodeValue, setBarcodeValue] = useState<string>(
+    currentConfig.barcodeValue || BARCODE_PRESETS[0].code
+  );
+  const [barcodeLabel, setBarcodeLabel] = useState<string>(
+    currentConfig.barcodeLabel || BARCODE_PRESETS[0].label
+  );
 
   const computedWakeUpTime = calculateWakeUpTime(fajrTime, offsetMinutes);
 
@@ -107,6 +115,8 @@ export const AlarmEditScreen: React.FC<AlarmEditScreenProps> = ({
       mathDifficulty,
       selectedToneId,
       city,
+      barcodeValue,
+      barcodeLabel,
     };
 
     onSave(newConfig);
@@ -572,6 +582,58 @@ export const AlarmEditScreen: React.FC<AlarmEditScreenProps> = ({
                   </div>
                 </div>
               </div>
+            )}
+          </div>
+
+          {/* 5. مهمة مغادرة الفراش (مسح الباركود / مكان الوضوء) */}
+          <div
+            onClick={() => setMissionType('barcode')}
+            className={`border rounded-2xl p-4 cursor-pointer transition-all ${
+              missionType === 'barcode'
+                ? isDark
+                  ? 'bg-emerald-950/40 border-emerald-500 shadow-md shadow-emerald-950/50'
+                  : 'bg-emerald-50 border-emerald-500 shadow-xs'
+                : isDark
+                ? 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+                : 'bg-white border-slate-200 hover:border-slate-300 shadow-2xs'
+            }`}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${
+                    isDark ? 'bg-slate-800' : 'bg-slate-100'
+                  }`}
+                >
+                  🪥
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      مغادرة الفراش (مسح الباركود)
+                    </h4>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                      ضمان اليقظة 100%
+                    </span>
+                  </div>
+                  <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    يُلزمك بالقيام ومسح باركود معجون الأسنان أو مصحف الصالة لإيقاف الرنين
+                  </p>
+                </div>
+              </div>
+              {missionType === 'barcode' && <Check className="w-4 h-4 text-emerald-500 stroke-[3]" />}
+            </div>
+
+            {/* Sub-selector for Barcode Target Location & Registration */}
+            {missionType === 'barcode' && (
+              <BarcodeSetupConfigurator
+                barcodeValue={barcodeValue}
+                barcodeLabel={barcodeLabel}
+                onChangeBarcode={(newCode, newLabel) => {
+                  setBarcodeValue(newCode);
+                  setBarcodeLabel(newLabel);
+                }}
+              />
             )}
           </div>
         </div>

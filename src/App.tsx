@@ -21,6 +21,8 @@ const DEFAULT_CONFIG: AlarmConfig = {
   selectedToneId: 'tone_qom',
   isEnabled: true,
   city: 'مكة المكرمة',
+  barcodeValue: 'WUDU-TOOTHPASTE-786',
+  barcodeLabel: 'معجون الأسنان بالحمام 🪥',
 };
 
 export default function App() {

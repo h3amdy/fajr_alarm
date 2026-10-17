@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'constants/app_colors.dart';
 import 'screens/home_screen.dart';
 import 'services/alarm_service.dart';
 
@@ -39,8 +38,8 @@ class FajrAlarmApp extends StatelessWidget {
         useMaterial3: true,
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF0B132B),
-        colorScheme: const ColorScheme.dark(
-          primary: AppColors.emerald,
+        colorScheme: ColorScheme.dark(
+          primary: Colors.emerald,
           secondary: Colors.tealAccent,
           surface: const Color(0xFF1C2541),
         ),
@@ -54,8 +53,8 @@ class FajrAlarmApp extends StatelessWidget {
         useMaterial3: true,
         brightness: Brightness.light,
         scaffoldBackgroundColor: const Color(0xFFF8FAFC),
-        colorScheme: const ColorScheme.light(
-          primary: AppColors.emerald,
+        colorScheme: ColorScheme.light(
+          primary: Colors.emerald,
           surface: Colors.white,
         ),
         fontFamily: 'Cairo',

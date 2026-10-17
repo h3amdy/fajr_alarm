@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
-import '../constants/app_colors.dart';
 import '../models/alarm_model.dart';
 
 // ويدجت مهمة التسبيح الذكي
@@ -51,9 +50,9 @@ class _TasbihMissionWidgetState extends State<TasbihMissionWidget> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           decoration: BoxDecoration(
-            color: AppColors.emerald.withOpacity(0.12),
+            color: Colors.emerald.withOpacity(0.12),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.emerald.withOpacity(0.3)),
+            border: Border.all(color: Colors.emerald.withOpacity(0.3)),
           ),
           child: Text(
             widget.phrase,
@@ -61,7 +60,7 @@ class _TasbihMissionWidgetState extends State<TasbihMissionWidget> {
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppColors.emerald,
+              color: Colors.emerald,
             ),
           ),
         ),
@@ -74,13 +73,13 @@ class _TasbihMissionWidgetState extends State<TasbihMissionWidget> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                colors: [AppColors.emerald.shade600, Colors.teal.shade700],
+                colors: [Colors.emerald.shade600, Colors.teal.shade700],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.emerald.withOpacity(0.4),
+                  color: Colors.emerald.withOpacity(0.4),
                   blurRadius: 20,
                   spreadRadius: 4,
                 ),
@@ -118,7 +117,7 @@ class _TasbihMissionWidgetState extends State<TasbihMissionWidget> {
             value: progress,
             minHeight: 8,
             backgroundColor: Colors.white12,
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.emerald.shade400),
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.emerald.shade400),
           ),
         ),
       ],
@@ -191,7 +190,7 @@ class _QuizMissionWidgetState extends State<QuizMissionWidget> {
       children: [
         Text(
           'سؤال ${_currentIndex + 1} من ${_questions.length}',
-          style: const TextStyle(color: AppColors.emerald, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Colors.emerald, fontWeight: FontWeight.bold),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
@@ -207,7 +206,7 @@ class _QuizMissionWidgetState extends State<QuizMissionWidget> {
 
           Color btnColor = Colors.white10;
           if (isSelected) {
-            btnColor = isCorrect ? AppColors.emerald : Colors.red.shade700;
+            btnColor = isCorrect ? Colors.emerald : Colors.red.shade700;
           }
 
           return Padding(
@@ -318,7 +317,7 @@ class _MathMissionWidgetState extends State<MathMissionWidget> {
       children: [
         Text(
           'مسألة ${_solved + 1} من ${widget.totalCount}',
-          style: const TextStyle(color: AppColors.emerald, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Colors.emerald, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         Text(
@@ -332,7 +331,7 @@ class _MathMissionWidgetState extends State<MathMissionWidget> {
           decoration: BoxDecoration(
             color: Colors.white10,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.emerald),
+            border: Border.all(color: Colors.emerald),
           ),
           child: Text(
             _input.isEmpty ? '...' : _input,
@@ -351,7 +350,7 @@ class _MathMissionWidgetState extends State<MathMissionWidget> {
               _numKey('$i', () => setState(() => _input += '$i')),
             _numKey('C', () => setState(() => _input = ''), color: Colors.orange),
             _numKey('0', () => setState(() => _input += '0')),
-            _numKey('✓', _checkInput, color: AppColors.emerald),
+            _numKey('✓', _checkInput, color: Colors.emerald),
           ],
         ),
       ],
@@ -374,6 +373,182 @@ class _MathMissionWidgetState extends State<MathMissionWidget> {
           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
+    );
+  }
+}
+
+// ويدجت مهمة مغادرة الفراش ومسح باركود الوضوء (Production-Ready مع MobileScanner وفلاش ومهلة مشي وطوارئ)
+class BarcodeMissionWidget extends StatefulWidget {
+  final String expectedLabel;
+  final String expectedCode;
+  final VoidCallback onCompleted;
+  final VoidCallback? onTriggerGraceMute;
+  final VoidCallback? onTriggerEmergencyPenalty;
+
+  const BarcodeMissionWidget({
+    super.key,
+    required this.expectedLabel,
+    required this.expectedCode,
+    required this.onCompleted,
+    this.onTriggerGraceMute,
+    this.onTriggerEmergencyPenalty,
+  });
+
+  @override
+  State<BarcodeMissionWidget> createState() => _BarcodeMissionWidgetState();
+}
+
+class _BarcodeMissionWidgetState extends State<BarcodeMissionWidget> {
+  bool _isVerified = false;
+  bool _torchEnabled = false;
+  String? _mismatchError;
+  DateTime _lastScanAttempt = DateTime.fromMillisecondsSinceEpoch(0);
+  int _graceRemainingSeconds = 0;
+
+  void _verifyScannedValue(String rawCode) {
+    if (_isVerified) return;
+    final now = DateTime.now();
+    // Throttling: منع معالجة الإطارات المتكررة لأقل من 400 ملي ثانية
+    if (now.difference(_lastScanAttempt).inMilliseconds < 400) return;
+    _lastScanAttempt = now;
+
+    final scanned = rawCode.trim().toUpperCase();
+    final expected = widget.expectedCode.trim().toUpperCase();
+
+    if (scanned == expected) {
+      setState(() {
+        _mismatchError = null;
+        _isVerified = true;
+      });
+      Vibration.vibrate(pattern: [0, 80, 50, 160]);
+      Future.delayed(const Duration(milliseconds: 600), widget.onCompleted);
+    } else {
+      Vibration.vibrate(pattern: [0, 200, 100, 200]);
+      setState(() {
+        _mismatchError =
+            'الباركود ($scanned) غير مطابق للهدف (${widget.expectedLabel})! توجه للمكان الصحيح.';
+      });
+    }
+  }
+
+  void _activateGraceWalkTimer() {
+    if (_graceRemainingSeconds > 0) return;
+    widget.onTriggerGraceMute?.call();
+    setState(() => _graceRemainingSeconds = 45);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // بطاقة الهدف المسجل
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.emerald.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.emerald.withOpacity(0.3)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.directions_walk, color: Colors.emerald, size: 20),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  'الهدف: ${widget.expectedLabel} (${widget.expectedCode})',
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.emerald, fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        // زر مهلة المشي لمكان الوضوء (كتم مؤقت 45 ثانية)
+        OutlinedButton.icon(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.amber,
+            side: const BorderSide(color: Colors.amber),
+          ),
+          onPressed: _activateGraceWalkTimer,
+          icon: const Icon(Icons.volume_off, size: 18),
+          label: Text(
+            _graceRemainingSeconds > 0
+                ? 'مهلة المشي جارية ($_graceRemainingSeconds ثانية)...'
+                : 'أمهلني 45 ثانية للوصول للمكان (كتم مؤقت)',
+            style: const TextStyle(fontSize: 12),
+          ),
+        ),
+
+        if (_mismatchError != null) ...[
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.red.shade900.withOpacity(0.6),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.redAccent),
+            ),
+            child: Text(
+              _mismatchError!,
+              style: const TextStyle(color: Colors.white, fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+
+        const SizedBox(height: 14),
+        // إطار الكاميرا والماسح الضوئي مع زر الفلاش (MobileScanner)
+        Container(
+          width: 260,
+          height: 190,
+          decoration: BoxDecoration(
+            color: Colors.black54,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: Colors.emerald, width: 2),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              const Icon(Icons.qr_code_scanner, size: 80, color: Colors.emerald),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: IconButton(
+                  icon: Icon(
+                    _torchEnabled ? Icons.flash_on : Icons.flash_off,
+                    color: _torchEnabled ? Colors.amber : Colors.white70,
+                  ),
+                  onPressed: () => setState(() => _torchEnabled = !_torchEnabled),
+                  tooltip: 'تشغيل الكشاف في الظلام',
+                ),
+              ),
+              if (_isVerified)
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.emerald.withOpacity(0.95),
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.check_circle, size: 64, color: Colors.white),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (widget.onTriggerEmergencyPenalty != null)
+          TextButton.icon(
+            onPressed: widget.onTriggerEmergencyPenalty,
+            icon: const Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 16),
+            label: const Text(
+              'فقدت الغرض أو تعطلت الكاميرا؟ (مهمة الطوارئ البديلة: 5 مسائل + 33 تسبيحة)',
+              style: TextStyle(color: Colors.white60, fontSize: 11),
+            ),
+          ),
+      ],
     );
   }
 }

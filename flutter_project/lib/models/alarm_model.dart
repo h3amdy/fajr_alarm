@@ -5,6 +5,7 @@ enum MissionType {
   tasbih,
   religiousQuiz,
   mathQuiz,
+  barcode,
 }
 
 enum MathDifficulty {
@@ -46,6 +47,8 @@ class AlarmConfig {
   final String selectedToneId; // 'tone_qom', 'tone_adhan', 'tone_quran'
   final bool isEnabled;
   final String city;
+  final String barcodeValue;
+  final String barcodeLabel;
 
   AlarmConfig({
     required this.fajrTime,
@@ -60,6 +63,8 @@ class AlarmConfig {
     required this.selectedToneId,
     required this.isEnabled,
     required this.city,
+    this.barcodeValue = 'WUDU-TOOTHPASTE-786',
+    this.barcodeLabel = 'معجون الأسنان بالحمام 🪥',
   });
 
   factory AlarmConfig.defaultConfig() {
@@ -76,6 +81,8 @@ class AlarmConfig {
       selectedToneId: 'tone_qom',
       isEnabled: true,
       city: "مكة المكرمة",
+      barcodeValue: 'WUDU-TOOTHPASTE-786',
+      barcodeLabel: 'معجون الأسنان بالحمام 🪥',
     );
   }
 
@@ -93,6 +100,8 @@ class AlarmConfig {
       'selectedToneId': selectedToneId,
       'isEnabled': isEnabled,
       'city': city,
+      'barcodeValue': barcodeValue,
+      'barcodeLabel': barcodeLabel,
     };
   }
 
@@ -110,6 +119,8 @@ class AlarmConfig {
       selectedToneId: map['selectedToneId'] ?? 'tone_qom',
       isEnabled: map['isEnabled'] ?? true,
       city: map['city'] ?? "مكة المكرمة",
+      barcodeValue: map['barcodeValue'] ?? 'WUDU-TOOTHPASTE-786',
+      barcodeLabel: map['barcodeLabel'] ?? 'معجون الأسنان بالحمام 🪥',
     );
   }
 

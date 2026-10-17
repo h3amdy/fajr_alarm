@@ -9,6 +9,8 @@ import {
   RELIGIOUS_QUESTIONS,
   ALARM_TONES,
   getDistinctReligiousQuestions,
+  verifyBarcodeMatch,
+  EMERGENCY_PENALTY_CONFIG,
 } from './fajrLogic.ts';
 
 test('calculateWakeUpTime computes exact time with negative offsets', () => {
@@ -73,3 +75,31 @@ test('getDistinctReligiousQuestions returns unique questions', () => {
   const ids = new Set(questions.map((q) => q.id));
   assert.equal(ids.size, 3);
 });
+
+test('verifyBarcodeMatch strictly accepts only exact normalized matches and rejects wrong barcodes', () => {
+  // Exact match
+  const valid = verifyBarcodeMatch('6281000456789', '6281000456789', 'معجون الأسنان بالحمام');
+  assert.equal(valid.isValid, true);
+  assert.equal(valid.errorReason, undefined);
+
+  // Case & whitespace insensitive match
+  const validCase = verifyBarcodeMatch('  wudu-toothpaste-786 ', 'WUDU-TOOTHPASTE-786');
+  assert.equal(validCase.isValid, true);
+
+  // Reject wrong barcode (e.g. item next to bed)
+  const mismatch = verifyBarcodeMatch('999111222333', '6281000456789', 'معجون الأسنان بالحمام');
+  assert.equal(mismatch.isValid, false);
+  assert.ok(mismatch.errorReason && mismatch.errorReason.includes('غير مطابق'));
+
+  // Reject empty barcode
+  const empty = verifyBarcodeMatch('   ', '6281000456789');
+  assert.equal(empty.isValid, false);
+});
+
+test('EMERGENCY_PENALTY_CONFIG enforces strict grace timer and penalty thresholds', () => {
+  assert.equal(EMERGENCY_PENALTY_CONFIG.graceMuteSeconds, 45);
+  assert.equal(EMERGENCY_PENALTY_CONFIG.maxGraceMuteUses, 2);
+  assert.ok(EMERGENCY_PENALTY_CONFIG.penaltyMathCount >= 5);
+  assert.ok(EMERGENCY_PENALTY_CONFIG.penaltyTasbihCount >= 33);
+});
+

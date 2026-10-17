@@ -8,10 +8,12 @@ import {
   QuizQuestion,
   MathProblem,
   ALARM_TONES,
+  EMERGENCY_PENALTY_CONFIG,
 } from '../utils/fajrLogic';
 import { soundService } from '../utils/soundService';
 import { useTheme } from '../themeContext';
-import { Bell, Check, Sparkles, Volume2, VolumeX, ArrowLeft } from 'lucide-react';
+import { Bell, Check, Sparkles, Volume2, VolumeX, ArrowLeft, ShieldAlert } from 'lucide-react';
+import { BarcodeMissionScanner } from './BarcodeMissionScanner';
 
 interface RingingScreenProps {
   config: AlarmConfig;
@@ -27,8 +29,19 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ config, onDismiss 
   const [isMuted, setIsMuted] = useState(false);
   const [isAutoplayBlocked, setIsAutoplayBlocked] = useState(false);
 
+  // Walk-to-target 45s grace mute timer state
+  const [graceSecondsRemaining, setGraceSecondsRemaining] = useState(0);
+  const [graceUsesCount, setGraceUsesCount] = useState(0);
+
+  // Emergency Penalty Fallback state ('none' | 'math' | 'tasbih')
+  const [emergencyPenaltyPhase, setEmergencyPenaltyPhase] = useState<'none' | 'math' | 'tasbih'>('none');
+
   // Tasbih state
   const [tasbihCurrent, setTasbihCurrent] = useState(0);
+  const targetTasbihCount =
+    emergencyPenaltyPhase === 'tasbih'
+      ? EMERGENCY_PENALTY_CONFIG.penaltyTasbihCount
+      : config.tasbihCount;
 
   // Religious Quiz state (multiple questions support)
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
@@ -68,8 +81,43 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ config, onDismiss 
     };
   }, [config]);
 
+  // Walk-to-target Grace Mute countdown effect
+  useEffect(() => {
+    if (graceSecondsRemaining <= 0 || isCompleted) return;
+
+    const timer = setTimeout(() => {
+      if (graceSecondsRemaining <= 1) {
+        setGraceSecondsRemaining(0);
+        setIsMuted(false);
+        soundService.startAlarmSound(config.selectedToneId);
+      } else {
+        setGraceSecondsRemaining(graceSecondsRemaining - 1);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [graceSecondsRemaining, isCompleted, config.selectedToneId]);
+
+  const handleTriggerGraceMute = () => {
+    if (graceUsesCount >= EMERGENCY_PENALTY_CONFIG.maxGraceMuteUses) return;
+    soundService.stopAlarmSound();
+    setIsMuted(true);
+    setGraceUsesCount((prev) => prev + 1);
+    setGraceSecondsRemaining(EMERGENCY_PENALTY_CONFIG.graceMuteSeconds);
+  };
+
+  const handleTriggerEmergencyPenalty = () => {
+    setEmergencyPenaltyPhase('math');
+    setMathQuestionsTotal(EMERGENCY_PENALTY_CONFIG.penaltyMathCount);
+    setCurrentMathIndex(0);
+    setMathInput('');
+    setMathError(null);
+    setMathProblem(generateMathProblem(EMERGENCY_PENALTY_CONFIG.penaltyMathDifficulty));
+  };
+
   const handleMuteToggle = () => {
     if (isMuted) {
+      setGraceSecondsRemaining(0);
       soundService.startAlarmSound(config.selectedToneId);
       setIsMuted(false);
     } else {
@@ -79,6 +127,7 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ config, onDismiss 
   };
 
   const handleCompleteMission = () => {
+    setGraceSecondsRemaining(0);
     soundService.stopAlarmSound();
     soundService.playSuccessSound();
     setIsCompleted(true);
@@ -89,7 +138,7 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ config, onDismiss 
     soundService.playTasbihTick();
     const next = tasbihCurrent + 1;
     setTasbihCurrent(next);
-    if (next >= config.tasbihCount) {
+    if (next >= targetTasbihCount) {
       handleCompleteMission();
     }
   };
@@ -128,6 +177,11 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ config, onDismiss 
   // MATH VERIFY
   const handleMathVerify = (e: React.FormEvent) => {
     e.preventDefault();
+    const activeDifficulty =
+      emergencyPenaltyPhase === 'math'
+        ? EMERGENCY_PENALTY_CONFIG.penaltyMathDifficulty
+        : config.mathDifficulty || 'medium';
+
     if (checkMathAnswer(mathInput, mathProblem.answer)) {
       setMathError(null);
       soundService.playSuccessSound();
@@ -136,7 +190,11 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ config, onDismiss 
         // Move to next math problem
         setMathInput('');
         setCurrentMathIndex((prev) => prev + 1);
-        setMathProblem(generateMathProblem(config.mathDifficulty || 'medium'));
+        setMathProblem(generateMathProblem(activeDifficulty));
+      } else if (emergencyPenaltyPhase === 'math') {
+        // Transition from Emergency Phase 1 (Math) to Phase 2 (33 Tasbihs)
+        setTasbihCurrent(0);
+        setEmergencyPenaltyPhase('tasbih');
       } else {
         // All math questions completed!
         handleCompleteMission();
@@ -279,8 +337,27 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ config, onDismiss 
         ) : (
           /* ACTIVE MISSION STATES */
           <div className="w-full">
-            {/* 1. TASBIH MISSION */}
-            {config.missionType === 'tasbih' && (
+            {/* Emergency Penalty Active Banner */}
+            {emergencyPenaltyPhase !== 'none' && (
+              <div
+                className={`mb-4 p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 ${
+                  isDark
+                    ? 'bg-rose-950/60 border-rose-700/60 text-rose-200'
+                    : 'bg-rose-50 border-rose-300 text-rose-900'
+                }`}
+              >
+                <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>
+                  مهمة الطوارئ البديلة:{' '}
+                  {emergencyPenaltyPhase === 'math'
+                    ? `المرحلة 1/2 (${EMERGENCY_PENALTY_CONFIG.penaltyMathCount} مسائل حسابية متقدمة)`
+                    : `المرحلة 2/2 (${EMERGENCY_PENALTY_CONFIG.penaltyTasbihCount} تسبيحة)`}
+                </span>
+              </div>
+            )}
+
+            {/* 1. TASBIH MISSION (or Emergency Phase 2) */}
+            {(config.missionType === 'tasbih' || emergencyPenaltyPhase === 'tasbih') && (
               <div className="flex flex-col items-center">
                 <div className="text-4xl mb-2">📿</div>
                 <div className={`text-2xl font-bold mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
@@ -292,7 +369,7 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ config, onDismiss 
                     isDark ? 'text-emerald-400' : 'text-emerald-700'
                   }`}
                 >
-                  {tasbihCurrent} / {config.tasbihCount}
+                  {tasbihCurrent} / {targetTasbihCount}
                 </div>
 
                 <button
@@ -305,7 +382,7 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ config, onDismiss 
                 </button>
 
                 <p className={`text-xs mt-6 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  اضغط {config.tasbihCount} مرات لإيقاف المنبه
+                  اضغط {targetTasbihCount} مرات لإيقاف المنبه
                 </p>
               </div>
             )}
@@ -416,8 +493,8 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ config, onDismiss 
               </div>
             )}
 
-            {/* 4. MATH QUIZ MISSION */}
-            {config.missionType === 'math_quiz' && (
+            {/* 4. MATH QUIZ MISSION (or Emergency Phase 1) */}
+            {(config.missionType === 'math_quiz' || emergencyPenaltyPhase === 'math') && (
               <div className="flex flex-col items-center w-full">
                 {/* Progress banner */}
                 <div className="flex items-center gap-2 mb-2">
@@ -472,8 +549,25 @@ export const RingingScreen: React.FC<RingingScreenProps> = ({ config, onDismiss 
 
                 <div className={`w-full h-px my-2 ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`} />
                 <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  حل المسألة بشكل صحيح لإيقاف المنبه
+                  {emergencyPenaltyPhase === 'math'
+                    ? 'أكمل المسائل الخمس للانتقال لمرحلة التسبيح وإيقاف المنبه'
+                    : 'حل المسألة بشكل صحيح لإيقاف المنبه'}
                 </p>
+              </div>
+            )}
+
+            {/* 5. BARCODE & WUDU STATION MISSION */}
+            {config.missionType === 'barcode' && emergencyPenaltyPhase === 'none' && (
+              <div className="flex flex-col items-center w-full">
+                <BarcodeMissionScanner
+                  expectedCode={config.barcodeValue || 'WUDU-TOOTHPASTE-786'}
+                  expectedLabel={config.barcodeLabel || 'معجون الأسنان بالحمام 🪥'}
+                  onCompleted={handleCompleteMission}
+                  graceSecondsRemaining={graceSecondsRemaining}
+                  graceUsesCount={graceUsesCount}
+                  onTriggerGraceMute={handleTriggerGraceMute}
+                  onTriggerEmergencyPenalty={handleTriggerEmergencyPenalty}
+                />
               </div>
             )}
           </div>

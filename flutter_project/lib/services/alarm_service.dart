@@ -1,4 +1,5 @@
 import 'package:alarm/alarm.dart';
+import 'package:alarm/model/alarm_settings.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/alarm_model.dart';
@@ -61,11 +62,9 @@ class AlarmService {
       vibrate: true,
       volume: 1.0,
       fadeDuration: 3.0,
-      notificationSettings: const NotificationSettings(
-        title: 'حان موعد صلاة الفجر',
-        body: 'قم وتوضأ، واكمل مهمة الاستيقاظ لإيقاف المنبه',
-      ),
-      warningNotificationOnKill: true,
+      notificationTitle: 'حان موعد صلاة الفجر',
+      notificationBody: 'قم وتوضأ، واكمل مهمة الاستيقاظ لإيقاف المنبه',
+      enableNotificationOnKill: true,
       androidFullScreenIntent: true,
     );
 
@@ -87,10 +86,8 @@ class AlarmService {
       loopAudio: true,
       vibrate: true,
       volume: 1.0,
-      notificationSettings: const NotificationSettings(
-        title: 'تجربة منبه الفجر',
-        body: 'أكمل المهمة لإيقاف المنبه التجريبي',
-      ),
+      notificationTitle: 'تجربة منبه الفجر',
+      notificationBody: 'أكمل المهمة لإيقاف المنبه التجريبي',
       androidFullScreenIntent: true,
     );
 

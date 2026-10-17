@@ -1,6 +1,50 @@
-export type MissionType = 'dhikr' | 'tasbih' | 'religious_quiz' | 'math_quiz';
+export type MissionType = 'dhikr' | 'tasbih' | 'religious_quiz' | 'math_quiz' | 'barcode';
 export type MathDifficulty = 'easy' | 'medium' | 'hard';
 export type AlarmToneId = 'tone_qom' | 'tone_adhan' | 'tone_quran';
+
+export interface BarcodePreset {
+  id: string;
+  label: string;
+  subtitle: string;
+  icon: string;
+  code: string;
+  recommendedLocation: string;
+}
+
+export const BARCODE_PRESETS: BarcodePreset[] = [
+  {
+    id: 'toothpaste',
+    label: 'معجون الأسنان بالحمام',
+    subtitle: 'في دورة المياه / مكان الوضوء',
+    icon: '🪥',
+    code: 'WUDU-TOOTHPASTE-786',
+    recommendedLocation: 'مكان الوضوء يضمن غسل وجهك فوراً',
+  },
+  {
+    id: 'musalla',
+    label: 'مصحف الصالة / زاوية الصلاة',
+    subtitle: 'في غرفة المعيشة أو مصلى البيت',
+    icon: '📖',
+    code: 'FAJR-PRAYER-CORNER-114',
+    recommendedLocation: 'يجبرك على مغادرة غرفة النوم تماماً',
+  },
+  {
+    id: 'kitchen_water',
+    label: 'قارورة الماء / المطبخ',
+    subtitle: 'على طاولة المطبخ لشرب ماء الفجر',
+    icon: '🥛',
+    code: 'KITCHEN-WATER-SUNNAH',
+    recommendedLocation: 'لشرب شربة ماء تنشط الدورة الدموية',
+  },
+  {
+    id: 'custom',
+    label: 'باركود مخصص في منزلك',
+    subtitle: 'أي كتاب أو غرض تضعه خارج غرفة النوم',
+    icon: '📷',
+    code: 'FAJR-CUSTOM-BEDROOM-EXIT',
+    recommendedLocation: 'يمكنك اختيار أي باركود تريده',
+  },
+];
 
 export interface AlarmTone {
   id: AlarmToneId;
@@ -55,6 +99,8 @@ export interface AlarmConfig {
   selectedToneId: AlarmToneId; // The chosen alarm sound
   isEnabled: boolean;
   city: string;
+  barcodeValue?: string; // Target code to scan (e.g. WUDU-TOOTHPASTE-786)
+  barcodeLabel?: string; // Display label (e.g. معجون الأسنان بالحمام 🪥)
 }
 
 export interface QuizQuestion {
@@ -443,3 +489,68 @@ export function formatTodayArabic(): string {
     return 'الأربعاء 7 أكتوبر';
   }
 }
+
+export interface BarcodeVerificationResult {
+  isValid: boolean;
+  scannedNormalized: string;
+  expectedNormalized: string;
+  errorReason?: string;
+}
+
+/**
+ * Strictly validates that a scanned barcode matches the registered target barcode.
+ * Rejects empty scans and mismatched items (e.g., scanning an item next to the bed).
+ */
+export function verifyBarcodeMatch(
+  scannedCode: string,
+  expectedCode: string,
+  expectedLabel: string = 'الهدف المسجل'
+): BarcodeVerificationResult {
+  const scannedNormalized = (scannedCode || '').trim().toUpperCase();
+  const expectedNormalized = (expectedCode || '').trim().toUpperCase();
+
+  if (!scannedNormalized) {
+    return {
+      isValid: false,
+      scannedNormalized,
+      expectedNormalized,
+      errorReason: 'لم يتم قراءة أي رمز باركود صالح. قرّب الكاميرا من الباركود بوضوح.',
+    };
+  }
+
+  if (!expectedNormalized) {
+    return {
+      isValid: false,
+      scannedNormalized,
+      expectedNormalized,
+      errorReason: 'لم يتم تحديد باركود مرجعي للمقارنة.',
+    };
+  }
+
+  if (scannedNormalized === expectedNormalized) {
+    return {
+      isValid: true,
+      scannedNormalized,
+      expectedNormalized,
+    };
+  }
+
+  return {
+    isValid: false,
+    scannedNormalized,
+    expectedNormalized,
+    errorReason: `هذا الباركود (${scannedNormalized}) غير مطابق للهدف المسجّل! غادر الفراش وتوجه إلى «${expectedLabel}» وامسح الرمز الصحيح (${expectedNormalized}).`,
+  };
+}
+
+/**
+ * Configuration for the Walk-to-Target Grace Timer & Emergency Penalty Fallback Mission
+ */
+export const EMERGENCY_PENALTY_CONFIG = {
+  graceMuteSeconds: 45,
+  maxGraceMuteUses: 2,
+  penaltyMathCount: 5,
+  penaltyMathDifficulty: 'hard' as MathDifficulty,
+  penaltyTasbihCount: 33,
+};
+
