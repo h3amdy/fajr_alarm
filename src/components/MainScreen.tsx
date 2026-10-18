@@ -106,6 +106,8 @@ export const MainScreen: React.FC<MainScreenProps> = ({
         return <HelpCircle className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />;
       case 'math_quiz':
         return <Calculator className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />;
+      case 'barcode':
+        return <span className="text-base">🪥</span>;
     }
   };
 
@@ -123,6 +125,8 @@ export const MainScreen: React.FC<MainScreenProps> = ({
         return `مسائل حسابية (${config.mathQuestionsCount} ${
           config.mathQuestionsCount === 1 ? 'مسألة' : 'مسائل'
         })`;
+      case 'barcode':
+        return 'مغادرة الفراش (مسح الباركود)';
     }
   };
 
@@ -136,6 +140,8 @@ export const MainScreen: React.FC<MainScreenProps> = ({
         return 'من بنك يضم أكثر من 25 سؤالاً إسلامياً';
       case 'math_quiz':
         return config.mathDifficulty === 'easy' ? 'مستوى سهل' : config.mathDifficulty === 'hard' ? 'مستوى متقدم' : 'مستوى متوسط';
+      case 'barcode':
+        return config.barcodeLabel || 'معجون الأسنان بالحمام 🪥';
     }
   };
 

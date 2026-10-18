@@ -8,9 +8,11 @@ import {
   formatArabicTime,
   TASBIH_PHRASES,
   RELIGIOUS_QUESTIONS,
+  BARCODE_PRESETS,
 } from '../utils/fajrLogic';
 import { useTheme } from '../themeContext';
 import { ToneSelector } from './ToneSelector';
+import { BarcodeSetupConfigurator } from './BarcodeSetupConfigurator';
 import { Check, ChevronRight, ArrowLeft } from 'lucide-react';
 
 interface AlarmSetupFlowProps {
@@ -78,6 +80,12 @@ export const AlarmSetupFlow: React.FC<AlarmSetupFlowProps> = ({
   const [selectedToneId, setSelectedToneId] = useState<AlarmToneId>(
     currentConfig?.selectedToneId || 'tone_qom'
   );
+  const [barcodeValue, setBarcodeValue] = useState<string>(
+    currentConfig?.barcodeValue || BARCODE_PRESETS[0].code
+  );
+  const [barcodeLabel, setBarcodeLabel] = useState<string>(
+    currentConfig?.barcodeLabel || BARCODE_PRESETS[0].label
+  );
 
   const computedWakeUpTime = calculateWakeUpTime(fajrTime, offsetMinutes);
 
@@ -115,6 +123,8 @@ export const AlarmSetupFlow: React.FC<AlarmSetupFlowProps> = ({
       selectedToneId,
       isEnabled: true,
       city,
+      barcodeValue,
+      barcodeLabel,
     };
     onSave(newConfig);
   };
@@ -673,6 +683,62 @@ export const AlarmSetupFlow: React.FC<AlarmSetupFlowProps> = ({
                     </div>
                   </div>
                 </div>
+              )}
+            </div>
+
+            {/* 5. مهمة مغادرة الفراش (مسح الباركود / مكان الوضوء) */}
+            <div
+              onClick={() => setMissionType('barcode')}
+              className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+                missionType === 'barcode'
+                  ? isDark
+                    ? 'bg-emerald-950/40 border-emerald-500 text-white shadow-md shadow-emerald-950'
+                    : 'bg-emerald-50 border-emerald-500 text-emerald-950 shadow-sm'
+                  : isDark
+                  ? 'bg-slate-900/70 border-slate-800 hover:border-slate-700 text-slate-300'
+                  : 'bg-white border-slate-200 hover:border-slate-300 text-slate-700 shadow-xs'
+              }`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${
+                      isDark ? 'bg-slate-800/80' : 'bg-slate-100'
+                    }`}
+                  >
+                    🪥
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className={`font-bold text-base ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                        مغادرة الفراش (مسح الباركود)
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        الأقوى لليقظة
+                      </span>
+                    </div>
+                    <div className={`text-xs mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      لن يتوقف المنبه حتى تمسح باركود معجون الأسنان أو مصحف الصالة
+                    </div>
+                  </div>
+                </div>
+                {missionType === 'barcode' && (
+                  <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center mt-1">
+                    <Check className="w-4 h-4 stroke-[3]" />
+                  </div>
+                )}
+              </div>
+
+              {/* Sub-selector for Barcode Target Location & Registration */}
+              {missionType === 'barcode' && (
+                <BarcodeSetupConfigurator
+                  barcodeValue={barcodeValue}
+                  barcodeLabel={barcodeLabel}
+                  onChangeBarcode={(newCode, newLabel) => {
+                    setBarcodeValue(newCode);
+                    setBarcodeLabel(newLabel);
+                  }}
+                />
               )}
             </div>
           </div>

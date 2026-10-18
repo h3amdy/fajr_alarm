@@ -56,6 +56,9 @@ dependencies:
   
   # إبقاء الشاشة مضاءة عند رنين المنبه
   wakelock_plus: ^1.2.0
+
+  # ماسح الباركود والـ QR الحقيقي بالكاميرا والفلاش (MLKit / Vision)
+  mobile_scanner: ^5.1.1
   
   # تنسيق التواريخ والأوقات
   intl: ^0.19.0
@@ -229,6 +232,7 @@ enum MissionType {
   tasbih,
   religiousQuiz,
   mathQuiz,
+  barcode,
 }
 
 enum MathDifficulty {
@@ -784,9 +788,10 @@ class _RingingScreenState extends State<RingingScreen> {
     path: 'lib/widgets/mission_widgets.dart',
     filename: 'mission_widgets.dart',
     language: 'dart',
-    description: 'ويدجت مهام الاستيقاظ: التسبيح الذكي مع الاهتزاز، الأسئلة الدينية، والمسائل الحسابية السريعة.',
+    description: 'ويدجت مهام الاستيقاظ: التسبيح الذكي، ماسح الباركود الصارم (MobileScanner + فلاش + مهلة مشي 45ث + طوارئ)، والأسئلة.',
     code: `import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:vibration/vibration.dart';
 import '../models/alarm_model.dart';
 
@@ -813,7 +818,7 @@ class _TasbihMissionWidgetState extends State<TasbihMissionWidget> {
   void _increment() {
     if (_currentCount < widget.targetCount) {
       setState(() => _currentCount++);
-      Vibration.vibrate(duration: 40); // رد فعل لمسي
+      Vibration.vibrate(duration: 40);
 
       if (_currentCount >= widget.targetCount) {
         Vibration.vibrate(pattern: [0, 100, 50, 150]);
@@ -840,6 +845,119 @@ class _TasbihMissionWidgetState extends State<TasbihMissionWidget> {
             ),
           ),
         ),
+      ],
+    );
+  }
+}
+
+// ويدجت مهمة مسح باركود الوضوء القابلة للإنتاج (MobileScanner + Throttling + مهلة مشي + طوارئ)
+class BarcodeMissionWidget extends StatefulWidget {
+  final String expectedLabel;
+  final String expectedCode;
+  final VoidCallback onCompleted;
+  final VoidCallback? onTriggerGraceMute;
+  final VoidCallback? onTriggerEmergencyPenalty;
+
+  const BarcodeMissionWidget({
+    super.key,
+    required this.expectedLabel,
+    required this.expectedCode,
+    required this.onCompleted,
+    this.onTriggerGraceMute,
+    this.onTriggerEmergencyPenalty,
+  });
+
+  @override
+  State<BarcodeMissionWidget> createState() => _BarcodeMissionWidgetState();
+}
+
+class _BarcodeMissionWidgetState extends State<BarcodeMissionWidget> {
+  final MobileScannerController _scannerController = MobileScannerController(
+    detectionSpeed: DetectionSpeed.normal,
+    facing: CameraFacing.back,
+  );
+  bool _isVerified = false;
+  String? _mismatchError;
+  DateTime _lastScan = DateTime.fromMillisecondsSinceEpoch(0);
+
+  @override
+  void dispose() {
+    _scannerController.dispose();
+    super.dispose();
+  }
+
+  void _onBarcodeDetect(BarcodeCapture capture) {
+    if (_isVerified || capture.barcodes.isEmpty) return;
+    final raw = capture.barcodes.first.rawValue;
+    if (raw == null || raw.trim().isEmpty) return;
+
+    // Throttling: منع معالجة الإطارات المتكررة لأقل من 400ms
+    final now = DateTime.now();
+    if (now.difference(_lastScan).inMilliseconds < 400) return;
+    _lastScan = now;
+
+    final scanned = raw.trim().toUpperCase();
+    final expected = widget.expectedCode.trim().toUpperCase();
+
+    if (scanned == expected) {
+      setState(() {
+        _mismatchError = null;
+        _isVerified = true;
+      });
+      Vibration.vibrate(pattern: [0, 80, 50, 160]);
+      Future.delayed(const Duration(milliseconds: 600), widget.onCompleted);
+    } else {
+      Vibration.vibrate(pattern: [0, 200, 100, 200]);
+      setState(() {
+        _mismatchError = 'الباركود ($scanned) غير مطابق للهدف (\${widget.expectedLabel})!';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text('الهدف: \${widget.expectedLabel} (\${widget.expectedCode})', style: const TextStyle(color: Colors.emerald, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        if (widget.onTriggerGraceMute != null)
+          OutlinedButton.icon(
+            onPressed: widget.onTriggerGraceMute,
+            icon: const Icon(Icons.volume_off, size: 18, color: Colors.amber),
+            label: const Text('أمهلني 45 ثانية للوصول للمكان (كتم مؤقت)', style: TextStyle(color: Colors.amber, fontSize: 12)),
+          ),
+        if (_mismatchError != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Text(_mismatchError!, style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
+          ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: 260,
+          height: 200,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Stack(
+              children: [
+                MobileScanner(controller: _scannerController, onDetect: _onBarcodeDetect),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: IconButton(
+                    icon: const Icon(Icons.flash_on, color: Colors.amber),
+                    onPressed: () => _scannerController.toggleTorch(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (widget.onTriggerEmergencyPenalty != null)
+          TextButton(
+            onPressed: widget.onTriggerEmergencyPenalty,
+            child: const Text('فقدت الغرض أو تعطلت الكاميرا؟ (مهمة الطوارئ: 5 مسائل + 33 تسبيحة)', style: TextStyle(color: Colors.white54, fontSize: 11)),
+          ),
       ],
     );
   }
