@@ -89,12 +89,13 @@ class _SetupScreenState extends State<SetupScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // 1. وقت الاستيقاظ قبل الفجر
+          // 1. توقيت الاستيقاظ
           _buildCard(
-            title: 'موعد رنين المنبه بالنسبة للفجر',
-            icon: Icons.access_time,
+            title: 'توقيت الاستيقاظ بالنسبة للفجر',
+            icon: Icons.access_time_filled,
             child: Wrap(
               spacing: 8,
+              runSpacing: 8,
               children: [0, -5, -10, -15, -20, -30].map((mins) {
                 final isSelected = _offsetMinutes == mins;
                 final label = mins == 0 ? 'مع أذان الفجر' : 'قبل الفجر بـ ${-mins} دقيقة';
@@ -127,19 +128,19 @@ class _SetupScreenState extends State<SetupScreen> {
                 _buildMissionRadio(
                   type: MissionType.religiousQuiz,
                   title: 'أسئلة دينية خفيفة',
-                  subtitle: 'تنشيط الذهن بأسئلة إسلامية سهلة',
+                  subtitle: 'تنشيط الذهن بأسئلة إسلامية موثقة',
                   icon: Icons.menu_book,
                 ),
                 _buildMissionRadio(
                   type: MissionType.mathQuiz,
                   title: 'مسائل حسابية',
-                  subtitle: 'عمليات جمع وضرب سريعة لتنشيط العقل',
+                  subtitle: 'عمليات جمع وضرب لتنشيط خلايا التفكير',
                   icon: Icons.calculate,
                 ),
                 _buildMissionRadio(
                   type: MissionType.dhikr,
                   title: 'أذكار الاستيقاظ المأثورة',
-                  subtitle: 'قراءة ذكر الاستيقاظ والتأكيد',
+                  subtitle: 'قراءة ذكر الاستيقاظ المأثور وتأكيده',
                   icon: Icons.wb_sunny,
                 ),
               ],
@@ -148,14 +149,15 @@ class _SetupScreenState extends State<SetupScreen> {
 
           const SizedBox(height: 16),
 
-          // تفاصيل المهمة المختارة
-          if (_missionType == MissionType.tasbih)
+          // تفاصيل مهمة التسبيح
+          if (_missionType == MissionType.tasbih) ...[
             _buildCard(
-              title: 'عدد التسبيحات',
+              title: 'عدد التسبيحات المطلوبة',
               icon: Icons.numbers,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [3, 5, 10, 33].map((count) {
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [3, 5, 7, 10, 33].map((count) {
                   return ChoiceChip(
                     label: Text('$count مرات'),
                     selected: _tasbihCount == count,
@@ -167,13 +169,125 @@ class _SetupScreenState extends State<SetupScreen> {
                 }).toList(),
               ),
             ),
-
-          if (_missionType == MissionType.mathQuiz)
+            const SizedBox(height: 16),
             _buildCard(
-              title: 'صعوبة العمليات الحسابية',
+              title: 'عبارة الذكر والتسبيح',
+              icon: Icons.auto_awesome,
+              child: DropdownButtonFormField<String>(
+                value: kTasbihPhrases.contains(_tasbihPhrase) ? _tasbihPhrase : kTasbihPhrases[0],
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
+                items: kTasbihPhrases.map((phrase) {
+                  return DropdownMenuItem<String>(
+                    value: phrase,
+                    child: Text(phrase, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => _tasbihPhrase = val);
+                },
+              ),
+            ),
+          ],
+
+          // تفاصيل مهمة الأسئلة الدينية (تخصيص عدد الأسئلة)
+          if (_missionType == MissionType.religiousQuiz)
+            _buildCard(
+              title: 'عدد الأسئلة الدينية للاستيقاظ',
+              icon: Icons.format_list_numbered_rtl,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'اختر عدد الأسئلة المطلوبة لإيقاف المنبه (من بنك الأسئلة الموثق 40 سؤالاً):',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildCountChip(
+                        count: 1,
+                        label: 'سؤال واحد',
+                        current: _quizQuestionsCount,
+                        onSelected: (c) => setState(() => _quizQuestionsCount = c),
+                      ),
+                      _buildCountChip(
+                        count: 2,
+                        label: 'سؤالين (موصى به)',
+                        current: _quizQuestionsCount,
+                        onSelected: (c) => setState(() => _quizQuestionsCount = c),
+                      ),
+                      _buildCountChip(
+                        count: 3,
+                        label: '3 أسئلة',
+                        current: _quizQuestionsCount,
+                        onSelected: (c) => setState(() => _quizQuestionsCount = c),
+                      ),
+                      _buildCountChip(
+                        count: 5,
+                        label: '5 أسئلة',
+                        current: _quizQuestionsCount,
+                        onSelected: (c) => setState(() => _quizQuestionsCount = c),
+                      ),
+                      _buildCountChip(
+                        count: 7,
+                        label: '7 أسئلة',
+                        current: _quizQuestionsCount,
+                        onSelected: (c) => setState(() => _quizQuestionsCount = c),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+          // تفاصيل مهمة المسائل الحسابية (تخصيص عدد المسائل والصعوبة)
+          if (_missionType == MissionType.mathQuiz) ...[
+            _buildCard(
+              title: 'عدد المسائل الحسابية',
+              icon: Icons.format_list_numbered,
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _buildCountChip(
+                    count: 1,
+                    label: 'مسألة واحدة',
+                    current: _mathQuestionsCount,
+                    onSelected: (c) => setState(() => _mathQuestionsCount = c),
+                  ),
+                  _buildCountChip(
+                    count: 2,
+                    label: 'مسألتين (موصى به)',
+                    current: _mathQuestionsCount,
+                    onSelected: (c) => setState(() => _mathQuestionsCount = c),
+                  ),
+                  _buildCountChip(
+                    count: 3,
+                    label: '3 مسائل',
+                    current: _mathQuestionsCount,
+                    onSelected: (c) => setState(() => _mathQuestionsCount = c),
+                  ),
+                  _buildCountChip(
+                    count: 5,
+                    label: '5 مسائل',
+                    current: _mathQuestionsCount,
+                    onSelected: (c) => setState(() => _mathQuestionsCount = c),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildCard(
+              title: 'مستوى صعوبة العمليات الحسابية',
               icon: Icons.tune,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   ChoiceChip(
                     label: const Text('سهل (جمع)'),
@@ -182,7 +296,7 @@ class _SetupScreenState extends State<SetupScreen> {
                     onSelected: (val) => setState(() => _mathDifficulty = MathDifficulty.easy),
                   ),
                   ChoiceChip(
-                    label: const Text('متوسط'),
+                    label: const Text('متوسط (جمع وطرح)'),
                     selected: _mathDifficulty == MathDifficulty.medium,
                     selectedColor: AppColors.emerald,
                     onSelected: (val) => setState(() => _mathDifficulty = MathDifficulty.medium),
@@ -196,6 +310,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 ],
               ),
             ),
+          ],
 
           const SizedBox(height: 16),
 
@@ -218,21 +333,24 @@ class _SetupScreenState extends State<SetupScreen> {
                     ),
                     color: isSelected ? AppColors.emerald.withOpacity(0.08) : Colors.transparent,
                   ),
-                  child: ListTile(
-                    leading: Text(tone.icon, style: const TextStyle(fontSize: 24)),
-                    title: Text(tone.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                    subtitle: Text(tone.subtitle, style: const TextStyle(fontSize: 12)),
-                    trailing: IconButton(
-                      icon: Icon(
-                        isPlaying ? Icons.stop_circle : Icons.play_circle_fill,
-                        color: AppColors.emerald,
-                        size: 32,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: ListTile(
+                      leading: Text(tone.icon, style: const TextStyle(fontSize: 24)),
+                      title: Text(tone.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                      subtitle: Text(tone.subtitle, style: const TextStyle(fontSize: 12)),
+                      trailing: IconButton(
+                        icon: Icon(
+                          isPlaying ? Icons.stop_circle : Icons.play_circle_fill,
+                          color: AppColors.emerald,
+                          size: 32,
+                        ),
+                        onPressed: () => _previewTone(tone),
                       ),
-                      onPressed: () => _previewTone(tone),
+                      onTap: () {
+                        setState(() => _selectedToneId = tone.id);
+                      },
                     ),
-                    onTap: () {
-                      setState(() => _selectedToneId = tone.id);
-                    },
                   ),
                 );
               }).toList(),
@@ -240,6 +358,23 @@ class _SetupScreenState extends State<SetupScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCountChip({
+    required int count,
+    required String label,
+    required int current,
+    required ValueChanged<int> onSelected,
+  }) {
+    final isSelected = current == count;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      selectedColor: AppColors.emerald,
+      onSelected: (val) {
+        if (val) onSelected(count);
+      },
     );
   }
 
